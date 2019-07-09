@@ -1,7 +1,7 @@
 'use strict';
 angular.module('hopsWorksApp')
-    .controller('AddDataValidationCtrl', ['$uibModalInstance', 'features',
-        function ($uibModalInstance, features) {
+    .controller('AddDataValidationCtrl', ['$uibModalInstance', 'features', 'growl',
+        function ($uibModalInstance, features, growl) {
             self = this;
             self.features = features;
 
@@ -80,6 +80,8 @@ angular.module('hopsWorksApp')
             self.addNewPredicate = function () {
                 if (self.selected_predicate) {
                     var predicate = self.selected_predicate.constructPredicate();
+                    growl.info('Added new predicate ' + predicate.predicate,
+                      {title: 'Added predicate', ttl: 2000, referenceId: 1})
                     $uibModalInstance.close(predicate);
                 } else {
                     $uibModalInstance.dismiss('cancel');
@@ -91,6 +93,7 @@ angular.module('hopsWorksApp')
              * Closes the modal
              */
             self.close = function () {
+                self.selected_predicate = {};
                 $uibModalInstance.dismiss('cancel');
             };
         }

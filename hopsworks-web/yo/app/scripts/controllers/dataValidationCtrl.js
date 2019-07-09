@@ -25,19 +25,19 @@ angular.module('hopsWorksApp')
                 var thisthis = self
                 ModalService.addDataValidationPredicate('lg', features).then(
                     function (predicate) {
-                        console.log("Success from Modal " + predicate)
                         thisthis.predicates.push(predicate);
                         self = thisthis
                     }, function (error) {
-                        console.log("Error from modal " + error);
                         self = thisthis
                     }
                 );
             };
 
             self.finishPredicates = function () {
-              console.log("Finished adding predicates");
-
+              if (self.predicates.length == 0) {
+                growl.error("There are no Predicates", {title: "Failed creating Job", ttl: 5000, referenceId: 1})
+                return;
+              }
               var constraints = [];
               for (var i = 0; i < self.predicates.length; i++) {
                 var constraint = {
