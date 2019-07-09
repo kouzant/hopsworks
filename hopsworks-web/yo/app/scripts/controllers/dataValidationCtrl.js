@@ -1,12 +1,13 @@
 'use strict';
 
 angular.module('hopsWorksApp')
-    .controller('DataValidationCtrl', ['$scope', '$routeParams', 'ModalService',
-        function($scope, $routeParams, ModalService) {
+    .controller('DataValidationCtrl', ['$scope', '$routeParams', 'ModalService', 'JobService', 'growl',
+        function($scope, $routeParams, ModalService, JobService, growl) {
 
             self = this
 
             self.showCreateNewDataValidationPage = false;
+            self.projectId = $routeParams.projectID;
 
             self.predicates = []
             self.featureGroupName = $routeParams.featureGroupName
@@ -67,8 +68,47 @@ angular.module('hopsWorksApp')
               var containerJSON = JSON.stringify(container);
               var escaped = containerJSON.replace(/"/g, '\\"');
               console.log("cg: " + escaped);
-              self.toggleNewDataValidationPage();
+              var jobConfig = self.createJobConfiguration(escaped);
+              JobService.putJob(self.projectId, jobConfig).then(
+                function (success) {
+                  growl.info('Data Validation Job ' + jobConfig.appName + ' created',
+                      {title: 'Created Job', ttl: 5000, referenceId: 1})
+                  self.toggleNewDataValidationPage();
+                }, function (error) {
+                  var errorMsg = (typeof error.data.usrMsg !== 'undefined')? error.data.usrMsg : "";
+                  growl.error(self.errorMsg, {title: error.data.errorMsg, ttl: 5000, referenceId: 1});
+                }
+              )
+            }
 
+            self.createJobConfiguration = function (predicatedStr) {
+              var jobName = "DataValidation-" + Math.round(new Date().getTime() / 1000);
+              var executionBin = "Path to HDFS of exec file"
+
+              var featureGroup = "--feature-group " + self.featureGroupName;
+              var featureVersion = "--feature-version 1"
+              var verificationRules = "--verification-rules \"" + predicatedStr + "\"" ;
+              var cmdArgs = featureGroup + " " + featureVersion + " " + verificationRules
+
+              var jobConfig = {};
+              jobConfig.type = "sparkJobConfiguration";
+              jobConfig.appName = jobName;
+              jobConfig.amQueue = "default";
+              jobConfig.amMemory = "2048";
+              jobConfig.amVCores = "2";
+              jobConfig.jobType = "SPARK";
+              jobConfig.appPath = executionBin;
+              jobConfig.mainClass = "Verification class"
+              jobConfig.args = cmdArgs;
+              jobConfig['spark.blacklist.enabled'] = false;
+              jobConfig['spark.dynamicAllocation.enabled'] = true;
+              jobConfig['spark.dynamicAllocation.minExecutors'] = 2;
+              jobConfig['spark.dynamicAllocation.maxExecutors'] = 20;
+              jobConfig['spark.dynamicAllocation.initialExecutors'] = 3;
+              jobConfig['spark.executor.memory'] = "2048";
+              jobConfig['spark.executor.cores'] = 2;
+
+              return jobConfig;
             }
 
             self.feature_group_info = {
