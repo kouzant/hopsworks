@@ -1,0 +1,68 @@
+<div ng-controller="MainCtrl as mainCtrl">
+    <div ng-include="'nav.html'"></div>
+    <div id="wrapper" class="toggled" ng-controller="DataValidationCtrl as dataValidationCtrl">
+        <div class="overlay"></div>
+        <div ng-include="'navProject.html'"></div>
+        <div class="content-wrapper">
+            <!-- Page content-->
+            <div class="content" style="background-color: white">
+                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10" layout-align="left left"
+                             style='margin-left: 0px;'>
+                    <div class="row">
+                        <button type="button" ng-click="dataValidationCtrl.showNewDataValidationPage()"
+                            class="btn btn-default btn-success control-label" style="margin: 10px">
+                        New data validation project<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
+                    </i>
+                    </button>
+                    </div>
+                    <hr class="col-xs-12 col-sm-12 col-md-12 col-lg-12"/>
+
+                </div>
+
+                <!-- Create new Data validation Project -->
+                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10" layout-align="left left"
+                             style='margin-left: 0px;' ng-if="dataValidationCtrl.showCreateNewDataValidationPage == true">
+                          
+                    <div class="row">
+                        <button type="button" ng-click="dataValidationCtrl.openPredicatesEditor()"
+                            class="btn btn-default btn-success control-label" style="margin: 10px">
+                            New predicate<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
+                            </i>
+                        </button>
+                    </div>
+
+                <div class="row">
+                <div class="container">
+                    <table st-table="dataValidationCtrl.predicates" class="table table-stripped">
+                        <thead>
+                            <tr>
+                                <th class="col-sm-1">Feature</th>
+                                <th class="col-sm-1">Predicate</th>
+                                <th class="col-sm-1">Arguments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="predicate in dataValidationCtrl.predicates">
+                                <td>{{ predicate.feature }}</td>
+                                <td>{{ predicate.predicate}}</td>
+                                <td>{{ predicate.arguments}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+
+                </div>
+
+                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10" layout-align="left left"
+                             style='margin-left: 0px;' ng-if="dataValidationCtrl.showCreateNewDataValidationPage == false">
+                Output the results here
+                </div>
+            </div>
+        <!-- content-wrapper -->
+        </div>
+    <!-- wrapper DataValidationCtrl-->
+    </div>
+
+<!-- outter MainCtrl div-->
+</div>

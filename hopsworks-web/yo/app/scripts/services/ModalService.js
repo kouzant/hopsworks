@@ -1795,5 +1795,29 @@ angular.module('hopsWorksApp')
                 });
                 return modalInstance.result;
             },
+            addDataValidationPredicate: function (size, features) {
+                var modalInstance = $uibModal.open({
+                    templateUrl: 'views/addDataValidationPredicate.html',
+                    controller: 'AddDataValidationCtrl as addDataValidationCtrl',
+                    size: size,
+                    resolve: {
+                        auth: ['$q', '$location', 'AuthService',
+                            function ($q, $location, AuthService) {
+                                return AuthService.session().then(
+                                    function (success) {
+                                    },
+                                    function (err) {
+                                        $location.path('/login');
+                                        $location.replace();
+                                        return $q.reject(err);
+                                    });
+                            }],
+                            features: function() {
+                                return features;
+                            }
+                    }
+                });
+                return modalInstance.result;
+            }
         };
     }]);

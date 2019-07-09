@@ -721,6 +721,12 @@ angular.module('hopsWorksApp')
                     });
             };
 
+            self.goToDataValidation = function (featureGroup) {
+                console.log("GOTO: " + featureGroup)
+                
+                $location.path('project/' + self.projectId + "/featurestore/datavalidation/" + featureGroup.name)
+            }
+
             /**
              * Called when a new featurestore is selected in the dropdown list in the UI
              *
