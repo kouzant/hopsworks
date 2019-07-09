@@ -100,6 +100,10 @@ public class FeaturestoreService {
   private TrainingDatasetService trainingDatasetService;
   @Inject
   private FeaturestoreStorageConnectorService featurestoreStorageConnectorService;
+  @EJB
+  private ProjectTeamFacade projectTeamFacade;
+  @EJB
+  private DataValidationResource dataValidationService;
 
   private Project project;
 
@@ -259,6 +263,12 @@ public class FeaturestoreService {
         .build();
   }
 
+  
+  @Path("{featureStoreId}/datavalidation")
+  public DataValidationResource dataValidation(@PathParam("featureStoreId") Integer featureStoreId) {
+    return this.dataValidationService.setFeatureStore(featureStoreId);
+  }
+  
   /**
    * Feature Groups sub-resource
    *

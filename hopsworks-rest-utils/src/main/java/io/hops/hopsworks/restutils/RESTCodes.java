@@ -1316,6 +1316,8 @@ public class RESTCodes {
         Response.Status.BAD_REQUEST),
     FEATURESTORE_INITIALIZATION_ERROR(61, "Featurestore Initialization Error", Response.Status.INTERNAL_SERVER_ERROR),
     FEATURESTORE_UTIL_ARGS_FAILURE(62, "Could not write featurestore util args to HDFS",
+        Response.Status.INTERNAL_SERVER_ERROR),
+    COULD_NOT_CREATE_DATA_VALIDATION_RULES(63, "Failed to create data validation rules",
         Response.Status.INTERNAL_SERVER_ERROR);
     
     
@@ -1453,12 +1455,12 @@ public class RESTCodes {
     INSTALL_TYPE_NOT_SUPPORTED(7, "The provided install type is not supported", Response.Status.BAD_REQUEST),
     CONDA_COMMAND_NOT_FOUND(8, "Command not found.", Response.Status.BAD_REQUEST),
     MACHINE_TYPE_NOT_SPECIFIED(9, "Machine type not specified.", Response.Status.BAD_REQUEST),
-    VERSION_NOT_SPECIFIED(10, "Version not specified.", Response.Status.BAD_REQUEST);
+    VERSION_NOT_SPECIFIED(9, "Version not specified.", Response.Status.BAD_REQUEST);
 
     private int code;
     private String message;
     private Response.Status respStatus;
-    public final int range = 300000;
+    public final int range = 280000;
 
     PythonErrorCode(Integer code, String message, Response.Status respStatus) {
       this.code = range + code;
