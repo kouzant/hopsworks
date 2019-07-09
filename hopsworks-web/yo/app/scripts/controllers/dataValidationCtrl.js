@@ -12,10 +12,9 @@ angular.module('hopsWorksApp')
             self.featureGroupName = $routeParams.featureGroupName
             console.log("Feature group name: " + self.featureGroupName)
 
-            self.showNewDataValidationPage = function () {
-                console.log("Toggle create form")
-                self.showCreateNewDataValidationPage = true;
-            };
+            self.toggleNewDataValidationPage = function () {
+              self.showCreateNewDataValidationPage = !self.showCreateNewDataValidationPage;
+            }
 
             self.openPredicatesEditor = function () {
                 
@@ -34,6 +33,43 @@ angular.module('hopsWorksApp')
                     }
                 );
             };
+
+            self.finishPredicates = function () {
+              console.log("Finished adding predicates");
+
+              var constraints = [];
+              for (var i = 0; i < self.predicates.length; i++) {
+                var constraint = {
+                  name: self.predicates[i].predicate,
+                  hint: self.predicates[i].arguments.hint
+                }
+                if (self.predicates[i].arguments.min) {
+                  constraint.min = self.predicates[i].arguments.min;
+                }
+                if (self.predicates[i].arguments.max) {
+                  constraint.max = self.predicates[i].arguments.max;
+                }
+                constraint.columns = self.predicates[i].feature;
+                constraints.push(constraint)
+              }
+
+              var constraintGroups = [];
+              var constraintGroup = {
+                level: "info",
+                description: "some description",
+                constraints: constraints
+              }
+              constraintGroups.push(constraintGroup)
+              var container = {
+                constraintGroups: constraintGroups
+              }
+
+              var containerJSON = JSON.stringify(container);
+              var escaped = containerJSON.replace(/"/g, '\\"');
+              console.log("cg: " + escaped);
+              self.toggleNewDataValidationPage();
+
+            }
 
             self.feature_group_info = {
                 "type": "featuregroupDTO",

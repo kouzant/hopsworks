@@ -19,6 +19,9 @@ angular.module('hopsWorksApp')
                 this.name = name;
                 this.predicateType = predicateType;
                 this.columnsSelectionMode = columnsSelectionMode;
+                // For SIGNLE_COLUMN predicates
+                this.feature;
+                // For MULTI_COLUMN predicates
                 this.features = [];
                 this.hint = "";
             }
@@ -27,10 +30,12 @@ angular.module('hopsWorksApp')
                 var features_names = [];
                 if (this.columnsSelectionMode == self.columnsModes.NO_COLUMNS) {
                     features_names.push('*');
-                } else {
+                } else if (this.columnsSelectionMode == self.columnsModes.MULTI_COLUMNS) {
                     for (var i = 0; i < this.features.length; i++) {
                         features_names.push(this.features[i].name)
                     }
+                } else if (this.columnsSelectionMode == self.columnsModes.SINGLE_COLUMN) {
+                    features_names.push(this.feature.name);
                 }
                 var args = {
                     hint: this.hint
@@ -52,8 +57,12 @@ angular.module('hopsWorksApp')
                 self.columnsModes.NO_COLUMNS);
             var hasCompleteness = new Predicate("hasCompleteness",
                 self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+            var hasUniqueness = new Predicate("hasUniqueness",
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+            var hasMin = new Predicate("hasMin", self.predicateType.BOUNDARY,
+                self.columnsModes.SINGLE_COLUMN);
 
-            self.valid_predicates = [hasSize, hasCompleteness]
+            self.valid_predicates = [hasSize, hasCompleteness, hasUniqueness, hasMin]
 
             self.selected_predicate;
         
