@@ -410,7 +410,7 @@ angular.module('hopsWorksApp', [
                             }]
                     }
                 })
-                .when('/project/:projectID/featurestore/datavalidation/:featureGroupName', {
+                .when('/project/:projectID/featurestore/datavalidation', {
                   templateUrl: 'views/dataValidation.html',
                   controller: 'ProjectCtrl as projectCtrl',
                   resolve: {
@@ -418,9 +418,6 @@ angular.module('hopsWorksApp', [
                           function ($q, $route, AuthGuardService) {
                             return AuthGuardService.guardProject($q, $route.current.params.projectID);
                           }]
-                    //featureName: ['$route', function($route) {
-                    //  $route.current.params.featureGroupName = $route.current.params.featureGroupName
-                    //}]
                   }
                 })
                 .otherwise({

@@ -2,35 +2,38 @@
 
 angular.module('hopsWorksApp')
     .controller('DataValidationCtrl', ['$scope', '$routeParams', 'ModalService', 'JobService', 'growl',
-        function($scope, $routeParams, ModalService, JobService, growl) {
+        'StorageService',
+        function($scope, $routeParams, ModalService, JobService, growl, StorageService) {
 
             self = this
 
             self.showCreateNewDataValidationPage = false;
             self.projectId = $routeParams.projectID;
+            self.featureGroup = {};
+            self.predicates = [];
 
-            self.predicates = []
-            self.featureGroupName = $routeParams.featureGroupName
-            console.log("Feature group name: " + self.featureGroupName)
+            self.init = function () {
+              self.featureGroup = StorageService.recover("dv_featuregroup");
+            }
+
+            self.init();
 
             self.toggleNewDataValidationPage = function () {
               self.showCreateNewDataValidationPage = !self.showCreateNewDataValidationPage;
             }
 
             self.openPredicatesEditor = function () {
-                
-                var feature_info = self.getFeatureGroupInfo();
-                var features = feature_info['features']
+              var features = self.featureGroup.features;
 
-                var thisthis = self
-                ModalService.addDataValidationPredicate('lg', features).then(
-                    function (predicate) {
-                        thisthis.predicates.push(predicate);
-                        self = thisthis
-                    }, function (error) {
-                        self = thisthis
-                    }
-                );
+              var thisthis = self
+              ModalService.addDataValidationPredicate('lg', features).then(
+                function (predicate) {
+                  thisthis.predicates.push(predicate);
+                  self = thisthis
+                }, function (error) {
+                  self = thisthis
+                }
+              );
             };
 
             self.finishPredicates = function () {
@@ -56,8 +59,8 @@ angular.module('hopsWorksApp')
 
               var constraintGroups = [];
               var constraintGroup = {
-                level: "info",
-                description: "some description",
+                level: "Warning",
+                description: "description",
                 constraints: constraints
               }
               constraintGroups.push(constraintGroup)
@@ -67,6 +70,7 @@ angular.module('hopsWorksApp')
 
               var containerJSON = JSON.stringify(container);
               var escaped = containerJSON.replace(/"/g, '\\"');
+              escaped = escaped.replace(/,/g, '\\,');
               console.log("cg: " + escaped);
               var jobConfig = self.createJobConfiguration(escaped);
               JobService.putJob(self.projectId, jobConfig).then(
@@ -83,10 +87,10 @@ angular.module('hopsWorksApp')
 
             self.createJobConfiguration = function (predicatedStr) {
               var jobName = "DataValidation-" + Math.round(new Date().getTime() / 1000);
-              var executionBin = "Path to HDFS of exec file"
+              var executionBin = "hdfs:///user/spark/hops-verification-assembly-1.0.jar"
 
-              var featureGroup = "--feature-group " + self.featureGroupName;
-              var featureVersion = "--feature-version 1"
+              var featureGroup = "--feature-group " + self.featureGroup.name;
+              var featureVersion = "--feature-version " + self.featureGroup.version;
               var verificationRules = "--verification-rules \"" + predicatedStr + "\"" ;
               var cmdArgs = featureGroup + " " + featureVersion + " " + verificationRules
 
@@ -98,7 +102,7 @@ angular.module('hopsWorksApp')
               jobConfig.amVCores = "2";
               jobConfig.jobType = "SPARK";
               jobConfig.appPath = executionBin;
-              jobConfig.mainClass = "Verification class"
+              jobConfig.mainClass = "Verification"
               jobConfig.args = cmdArgs;
               jobConfig['spark.blacklist.enabled'] = false;
               jobConfig['spark.dynamicAllocation.enabled'] = true;
@@ -109,54 +113,6 @@ angular.module('hopsWorksApp')
               jobConfig['spark.executor.cores'] = 2;
 
               return jobConfig;
-            }
-
-            self.feature_group_info = {
-                "type": "featuregroupDTO",
-                "features": [
-                  {
-                    "name": "average_attendance",
-                    "type": "float",
-                    "description": "-",
-                    "primary": false,
-                    "partition": false
-                  },
-                  {
-                    "name": "sum_attendance",
-                    "type": "float",
-                    "description": "-",
-                    "primary": false,
-                    "partition": false
-                  },
-                  {
-                    "name": "team_id",
-                    "type": "int",
-                    "description": "-",
-                    "primary": true,
-                    "partition": false
-                  }
-                ],
-                "featurestoreId": 12,
-                "featurestoreName": "demo_featurestore_admin000_featurestore",
-                "id": 141,
-                "inodeId": 113084,
-                "jobId": 42,
-                "jobName": "featurestore_tour_job-Copy1",
-                "jobStatus": "Succeeded",
-                "lastComputed": "2019-07-03T16:12:55Z",
-                "location": "hdfs://10.0.2.15:8020/apps/hive/warehouse/demo_featurestore_admin000_featurestore.db/attendances_features_1",
-                "name": "attendances_features",
-                "version": 1,
-                "featuregroupType": "CACHED_FEATURE_GROUP",
-                "hdfsStorePaths": [
-                  "hdfs://10.0.2.15:8020/apps/hive/warehouse/demo_featurestore_admin000_featurestore.db/attendances_features_1"
-                ],
-                "hiveTableType": "MANAGED_TABLE",
-                "inputFormat": "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
-              }
-
-            self.getFeatureGroupInfo = function () {
-                return self.feature_group_info;
             }
         }
     ]);
