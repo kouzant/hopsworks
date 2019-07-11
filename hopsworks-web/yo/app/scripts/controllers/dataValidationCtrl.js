@@ -2,15 +2,15 @@
 
 angular.module('hopsWorksApp')
     .controller('DataValidationCtrl', ['$scope', '$routeParams', 'ModalService', 'JobService', 'growl',
-        'StorageService',
-        function($scope, $routeParams, ModalService, JobService, growl, StorageService) {
+        'StorageService', '$location',
+        function($scope, $routeParams, ModalService, JobService, growl, StorageService, $location) {
 
             self = this
-
+            self.JOB_PREFIX = "DV-";
             self.showCreateNewDataValidationPage = false;
             self.projectId = $routeParams.projectID;
             self.featureGroup = {};
-            // Used only for UI
+            // Used only for UI to list predicates
             self.predicates = [];
 
             var ConstraintGroup = function(name, description, level) {
@@ -109,30 +109,6 @@ angular.module('hopsWorksApp')
                 growl.error("There are no Predicates", {title: "Failed creating Job", ttl: 5000, referenceId: 1})
                 return;
               }
-
-              /* var constraints = [];
-              for (var i = 0; i < self.predicates.length; i++) {
-                var constraint = {
-                  name: self.predicates[i].predicate,
-                  hint: self.predicates[i].arguments.hint
-                }
-                if (self.predicates[i].arguments.min) {
-                  constraint.min = self.predicates[i].arguments.min;
-                }
-                if (self.predicates[i].arguments.max) {
-                  constraint.max = self.predicates[i].arguments.max;
-                }
-                constraint.columns = self.predicates[i].feature;
-                constraints.push(constraint)
-              }
-
-              var constraintGroups = [];
-              var constraintGroup = {
-                level: "Warning",
-                description: "description",
-                constraints: constraints
-              }
-              constraintGroups.push(constraintGroup) */
               var container = {
                 constraintGroups: constraintGroups
               }
@@ -146,7 +122,10 @@ angular.module('hopsWorksApp')
               JobService.putJob(self.projectId, jobConfig).then(
                 function (success) {
                   growl.info('Data Validation Job ' + jobConfig.appName + ' created',
-                      {title: 'Created Job', ttl: 5000, referenceId: 1})
+                      {title: 'Created Job', ttl: 5000, referenceId: 1});
+
+                  JobService.setJobFilter(self.JOB_PREFIX + self.featureGroup.name);
+                  $location.path('project/' + self.projectId + "/jobs");
                   self.toggleNewDataValidationPage();
                 }, function (error) {
                   var errorMsg = (typeof error.data.usrMsg !== 'undefined')? error.data.usrMsg : "";
@@ -156,7 +135,8 @@ angular.module('hopsWorksApp')
             }
 
             self.createJobConfiguration = function (predicatedStr) {
-              var jobName = "DataValidation-" + Math.round(new Date().getTime() / 1000);
+              var jobName = self.JOB_PREFIX + self.featureGroup.name + "-v"
+                + self.featureGroup.version +"_"+ Math.round(new Date().getTime() / 1000);
               var executionBin = "hdfs:///user/spark/hops-verification-assembly-0.1.jar"
 
               var featureGroup = "--feature-group " + self.featureGroup.name;
