@@ -25,14 +25,21 @@
                              style='margin-left: 0px;' ng-if="dataValidationCtrl.showCreateNewDataValidationPage == true">
                           
                     <div class="row">
-                        <button type="button" ng-click="dataValidationCtrl.openPredicatesEditor()"
+                        <button type="button" ng-click="dataValidationCtrl.openConstraintGroupsPage()"
+                            class="btn btn-default btn-success control-label" style="margin: 10px">
+                            Create group<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
+                            </i>
+                        </button>
+                        <button type="button" ng-if="dataValidationCtrl.hasConstraintGroups()"
+                            ng-click="dataValidationCtrl.openPredicatesEditor()"
                             class="btn btn-default btn-success control-label" style="margin: 10px">
                             New predicate<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
                             </i>
                         </button>
-                        <button type="button" ng-click="dataValidationCtrl.finishPredicates()"
+                        <button type="button" ng-if="dataValidationCtrl.hasConstraintGroups()"
+                                ng-click="dataValidationCtrl.finishPredicates()"
                                 class="btn btn-default btn-info control-label" style="margin: 10px">
-                                Finish<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
+                                Finish<i style="margin-left: 10px" class="glyphicon glyphicon-ok">
                                 </i>
                         </button>
                     </div>
@@ -44,14 +51,16 @@
                             <tr>
                                 <th class="col-sm-1">Feature</th>
                                 <th class="col-sm-1">Predicate</th>
+                                <th class="col-sm-1">Group</th>
                                 <th class="col-sm-1">Arguments</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="predicate in dataValidationCtrl.predicates">
                                 <td>{{ predicate.feature }}</td>
-                                <td>{{ predicate.predicate}}</td>
-                                <td>{{ predicate.arguments}}</td>
+                                <td>{{ predicate.predicate }}</td>
+                                <td>{{ predicate.constraintGroup.name }} - {{ predicate.constraintGroup.level }}</td>
+                                <td>{{ predicate.arguments }}</td>
                             </tr>
                         </tbody>
                     </table>

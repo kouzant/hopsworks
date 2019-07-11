@@ -1,9 +1,12 @@
 'use strict';
 angular.module('hopsWorksApp')
-    .controller('AddDataValidationCtrl', ['$uibModalInstance', 'features', 'growl',
-        function ($uibModalInstance, features, growl) {
+    .controller('DataValidationModalsCtrl', ['$uibModalInstance', 'features', 'constraintGroups', 'growl',
+        function ($uibModalInstance, features, constraintGroups, growl) {
             self = this;
             self.features = features;
+            self.constraintGroups = constraintGroups;
+
+            self.constraintGroupLevels = ['Warning', 'Error'];
 
             self.columnsModes = {
                 NO_COLUMNS: 0,
@@ -18,6 +21,7 @@ angular.module('hopsWorksApp')
             var Predicate = function(name, predicateType, columnsSelectionMode) {
                 this.name = name;
                 this.predicateType = predicateType;
+                this.constraintGroup = {};
                 this.columnsSelectionMode = columnsSelectionMode;
                 // For SIGNLE_COLUMN predicates
                 this.feature;
@@ -48,7 +52,8 @@ angular.module('hopsWorksApp')
                 var predicate = {
                     feature: features_names,
                     predicate: this.name,
-                    arguments: args
+                    arguments: args,
+                    constraintGroup: this.constraintGroup
                 }
                 return predicate;
             };
@@ -65,6 +70,8 @@ angular.module('hopsWorksApp')
             self.valid_predicates = [hasSize, hasCompleteness, hasUniqueness, hasMin]
 
             self.selected_predicate;
+
+            self.selectedConstraintGroup;
         
             self.feature_selected = function () {
                 console.log("Feature selected: " + self.selected_feature)
@@ -87,6 +94,11 @@ angular.module('hopsWorksApp')
                     $uibModalInstance.dismiss('cancel');
                 }
                 
+            }
+
+            self.addNewGroup = function () {
+                console.log("Creating new data validation group");            
+                $uibModalInstance.close(self.constraintGroup);
             }
 
             /**
