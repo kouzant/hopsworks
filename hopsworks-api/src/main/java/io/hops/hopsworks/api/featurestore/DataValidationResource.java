@@ -23,6 +23,7 @@ import io.hops.hopsworks.api.filter.Audience;
 import io.hops.hopsworks.api.jwt.JWTHelper;
 import io.hops.hopsworks.common.dao.featurestore.Featurestore;
 import io.hops.hopsworks.common.dao.featurestore.FeaturestoreFacade;
+import io.hops.hopsworks.common.dao.featurestore.datavalidation.ConstraintGroup;
 import io.hops.hopsworks.common.dao.featurestore.datavalidation.DataValidationController;
 import io.hops.hopsworks.common.dao.featurestore.featuregroup.FeaturegroupController;
 import io.hops.hopsworks.common.dao.featurestore.featuregroup.FeaturegroupDTO;
@@ -46,7 +47,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless
@@ -114,9 +114,9 @@ public class DataValidationResource {
     Users user = jwtHelper.getUserPrincipal(sc);
     FeaturegroupDTO featureGroup = featuregroupController.getFeaturegroupWithIdAndFeaturestore(featurestore,
         featureGroupId);
-    List<String> rules = dataValidationController.readRulesForFeatureGroup(user, featurestore.getProject(),
-        featureGroup);
-    //rules.forEach(r -> LOGGER.log(Level.SEVERE, ">> RUle: " + r));
-    return Response.ok().build();
+    List<ConstraintGroup> constraintGroups = dataValidationController.readRulesForFeatureGroup(user,
+        featurestore.getProject(), featureGroup);
+    ConstraintGroupDTO response = ConstraintGroupDTO.fromConstraintGroups(constraintGroups);
+    return Response.ok(response).build();
   }
 }
