@@ -117,14 +117,14 @@ angular.module('hopsWorksApp')
                     }, function (error) {
                       self.submittingRules = false;
                       var errorMsg = (typeof error.data.usrMsg !== 'undefined')? error.data.usrMsg : "";
-                      growl.error(self.errorMsg, {title: error.data.errorMsg, ttl: 5000, referenceId: 1});
+                      growl.error(errorMsg, {title: 'Could not create data validation project', ttl: 5000, referenceId: 1});
                       self.toggleNewDataValidationPage();
                     }
                   )
                 }, function (error) {
                   self.submittingRules = false;
                   var errorMsg = (typeof error.data.usrMsg !== 'undefined')? error.data.usrMsg : "";
-                  growl.error(self.errorMsg, {title: error.data.errorMsg, ttl: 5000, referenceId: 1});
+                  growl.error(errorMsg, {title: 'Could not create data validation project', ttl: 5000, referenceId: 1});
                   self.toggleNewDataValidationPage();
                 })
             }
