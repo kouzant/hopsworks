@@ -1285,6 +1285,8 @@ public class RESTCodes {
     UNAUTHORIZED_FEATURESTORE_OPERATION(25, "Only data owners are allowed to delete or update feature groups/" +
       "training datasets that are not created by themself.", Response.Status.UNAUTHORIZED),
     COULD_NOT_CREATE_DATA_VALIDATION_RULES(26, "Failed to create data validation rules",
+        Response.Status.INTERNAL_SERVER_ERROR),
+    COULD_NOT_READ_DATA_VALIDATION_RESULT(27, "Failed to read data validation result",
         Response.Status.INTERNAL_SERVER_ERROR);
     
     
