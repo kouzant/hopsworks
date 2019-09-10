@@ -474,7 +474,7 @@ angular.module('hopsWorksApp', [
                     }
                 })
                 .when('/project/:projectID/featurestore/datavalidation', {
-                  templateUrl: 'views/dataValidation.html',
+                  templateUrl: 'views/dataValidation2.html',
                   controller: 'ProjectCtrl as projectCtrl',
                   resolve: {
                     auth: ['$q', '$route', 'AuthGuardService',

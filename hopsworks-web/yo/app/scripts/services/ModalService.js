@@ -1512,10 +1512,10 @@ angular.module('hopsWorksApp')
                 });
                 return modalInstance.result;
             },
-            addDataValidationPredicate: function (size, features, constraintGroups) {
+            addDataValidationPredicate: function (size, features, rule, groups) {
                 var modalInstance = $uibModal.open({
-                    templateUrl: 'views/addDataValidationPredicate.html',
-                    controller: 'DataValidationModalsCtrl as dataValidationModalsCtrl',
+                    templateUrl: 'views/addDataValidationPredicate2.html',
+                    controller: 'DataValidationModalsCtrl2 as dataValidationModalsCtrl2',
                     size: size,
                     resolve: {
                         auth: ['$q', '$location', 'AuthService',
@@ -1532,8 +1532,11 @@ angular.module('hopsWorksApp')
                             features: function() {
                                 return features;
                             },
-                            constraintGroups: function() {
-                                return constraintGroups;
+                            rule: function() {
+                                return rule;
+                            },
+                            groups: function() {
+                                return groups;
                             }
                     }
                 });

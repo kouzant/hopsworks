@@ -34,6 +34,121 @@ angular.module('hopsWorksApp')
             self.validationResult = {};
             self.validationWorking = false;
 
+            // START OF RULES
+            self.constraintGroupLevels = ['Warning', 'Error'];
+
+            self.columnsModes = {
+                NO_COLUMNS: 0,
+                SINGLE_COLUMN: 1,
+                MULTI_COLUMNS: 2
+            }
+
+            self.predicateType = {
+                BOUNDARY: 0
+            }
+            
+            var Predicate = function(name, predicateType, columnsSelectionMode, validationFunction) {
+                this.name = name;
+                this.predicateType = predicateType;
+                this.constraintGroup = {};
+                this.columnsSelectionMode = columnsSelectionMode;
+                // For SIGNLE_COLUMN predicates
+                this.feature;
+                // For MULTI_COLUMN predicates
+                this.features = [];
+                this.hint = "";
+            }
+
+            Predicate.prototype.constructPredicate = function () {
+                var features_names = [];
+                if (this.columnsSelectionMode == self.columnsModes.NO_COLUMNS) {
+                    features_names.push('*');
+                } else if (this.columnsSelectionMode == self.columnsModes.MULTI_COLUMNS) {
+                    for (var i = 0; i < this.features.length; i++) {
+                        features_names.push(this.features[i].name)
+                    }
+                } else if (this.columnsSelectionMode == self.columnsModes.SINGLE_COLUMN) {
+                    features_names.push(this.feature.name);
+                }
+                var args = {
+                    hint: this.hint
+                }
+                if (this.predicateType == self.predicateType.BOUNDARY) {
+                    args.min = this.min;
+                    args.max = this.max;
+                }
+
+                var predicate = {
+                    feature: features_names,
+                    predicate: this.name,
+                    arguments: args,
+                    constraintGroup: this.constraintGroup
+                }
+                return predicate;
+            };
+
+            Predicate.prototype.checkInput = function () {
+                if (this.isUndefined(this.min) || this.isUndefined(this.max)) {
+                    return 1;
+                }
+                if (this.isUndefined(this.hint) || this.hint.length == 0) {
+                    return 2;
+                }
+
+                if (this.columnsSelectionMode == self.columnsModes.MULTI_COLUMNS) {
+                    if (this.isUndefined(this.features) || this.features.length == 0) {
+                        return 3;
+                    }
+                }
+                if (this.columnsSelectionMode == self.columnsModes.SINGLE_COLUMN) {
+                    if (this.isUndefined(this.feature)) {
+                        return 3;
+                    }
+                }
+                if (this.isUndefined(this.constraintGroup)) {
+                    return 4;
+                }
+                return -1;
+            }
+
+            Predicate.prototype.isUndefined = function (input) {
+                return typeof input === "undefined";
+            }
+
+            /*
+            ** Deequ rules
+            */
+            var hasSize = new Predicate("hasSize", self.predicateType.BOUNDARY,
+                self.columnsModes.NO_COLUMNS);
+            var hasCompleteness = new Predicate("hasCompleteness",
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+            var hasUniqueness = new Predicate("hasUniqueness",
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+            var hasDistinctness = new Predicate("hasDistinctness",
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+            var hasUniqueValueRatio = new Predicate("hasUniqueValueRatio",
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+            var hasNumberOfDistinctValues = new Predicate("hasNumberOfDistinctValues",
+                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN);
+            var hasEntropy = new Predicate("hasEntropy",
+                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN);
+            var hasMin = new Predicate("hasMin", self.predicateType.BOUNDARY,
+                self.columnsModes.SINGLE_COLUMN);
+            var hasMax = new Predicate("hasMax", self.predicateType.BOUNDARY,
+                self.columnsModes.SINGLE_COLUMN);
+            var hasMean = new Predicate("hasMean", self.predicateType.BOUNDARY,
+                self.columnsModes.SINGLE_COLUMN);
+            var hasSum = new Predicate("hasSum", self.predicateType.BOUNDARY,
+                self.columnsModes.SINGLE_COLUMN);
+            var hasStandardDeviation = new Predicate("hasStandardDeviation",
+                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN);
+
+            self.valid_predicates = [hasSize, hasCompleteness, hasUniqueness,
+                hasDistinctness, hasUniqueValueRatio, hasNumberOfDistinctValues,
+                hasEntropy, hasMin, hasMax, hasMean, hasSum, hasStandardDeviation];
+              
+            // END OF RULES
+
             var ConstraintGroup = function(name, description, level) {
               this.name = name;
               this.description = description;
