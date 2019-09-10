@@ -12,9 +12,16 @@ angular.module('hopsWorksApp')
             self.submittingRules = false;
             self.featureGroup = {};
             self.user_rules = [];
+            // Used only for UI to list existing predicates
+            self.predicates = [];
+            self.showCreateNewDataValidationPage = false;
+            self.showValidationResult = false;
+            self.validationResult = {};
+            self.validationWorking = false;
 
             self.init = function () {
                 self.featureGroup = StorageService.recover("dv_featuregroup");
+                self.fetchValidationRules();
             }
 
             /**
@@ -46,7 +53,7 @@ angular.module('hopsWorksApp')
             var Predicate = function (name, predicateType, columnsSelectionMode, validationFunction) {
                 this.name = name;
                 this.predicateType = predicateType;
-                this.constraintGroup = {};
+                this.constraintGroup;
                 this.columnsSelectionMode = columnsSelectionMode;
                 // For SIGNLE_COLUMN predicates
                 this.feature;
@@ -107,6 +114,9 @@ angular.module('hopsWorksApp')
                 }
                 if (this.isUndefined(this.constraintGroup)) {
                     return 4;
+                }
+                if (this.isUndefined(this.constraintGroup)) {
+                    return 5;
                 }
                 return -1;
             }
@@ -183,7 +193,6 @@ angular.module('hopsWorksApp')
             self.flatValidationGroups = [warningGroup, errorGroup];
             // END OF VALIDATION GROUPS
 
-            self.showCreateNewDataValidationPage = false;
             self.toggleNewDataValidationPage = function () {
                 self.user_rules = [];
                 if (!self.showCreateNewDataValidationPage) {
@@ -191,6 +200,42 @@ angular.module('hopsWorksApp')
                 } else {
                     self.showCreateNewDataValidationPage = false;
                 }
+            }
+
+            self.fetchValidationRules = function () {
+                self.validationWorking = true;
+                DataValidationService.getRules(self.projectId, self.featureGroup.featurestoreId,
+                    self.featureGroup.id).then(
+                        function (success) {
+                            self.predicates = [];
+                            self.convertDTO2Rules(success.data);
+                            self.showValidationResult = false;
+                            self.validationResult = {};
+                            self.validationWorking = false;
+                        }, function (error) {
+                            self.validationWorking = false;
+                            growl.error(error, { title: "Could not fetch validation rules", ttl: 2000, referenceId: "dv_growl" });
+                        }
+                    )
+            }
+
+            self.fetchValidationResult = function () {
+                self.validationWorking = true;
+                DataValidationService.getResult(self.projectId, self.featureGroup.featurestoreId,
+                    self.featureGroup.id).then(
+                        function (success) {
+                            self.validationResult.status = success.data.status.toUpperCase();
+                            if (self.validationResult.status !== 'EMPTY') {
+                                self.validationResult.constraintsResult = success.data.constraintsResult;
+                            }
+                            self.validationWorking = false;
+                            self.showValidationResult = true;
+                        }, function (error) {
+                            growl.error(error, { title: "Could not fetch validation result", ttl: 2000, referenceId: "dv_growl" });
+                            self.validationWorking = false;
+                            self.showValidationResult = false;
+                        }
+                    )
             }
 
             self.addRule2DataValidation = function (rule) {
@@ -298,6 +343,37 @@ angular.module('hopsWorksApp')
                 return groupsContainer;
             }
 
+            /*
+             * Used to convert existing rules to flat predicates and print them
+            */
+            self.convertDTO2Rules = function (dto) {
+                var constraintGroups = dto.items;
+                if (!constraintGroups) {
+                    return;
+                }
+                for (var i = 0; i < constraintGroups.length; i++) {
+                    var constraintGroupJ = constraintGroups[i];
+                    var constraintGroup = new ConstraintGroup(constraintGroupJ.name, constraintGroupJ.description,
+                        constraintGroupJ.level);
+                    var constraintsJ = constraintGroupJ.constraints.items;
+                    for (var j = 0; j < constraintsJ.length; j++) {
+                        var constraintJ = constraintsJ[j];
+                        var constraint = {};
+                        constraint.predicate = constraintJ.name;
+                        constraint.feature = constraintJ.columns;
+                        constraint.constraintGroup = constraintGroup;
+                        constraint.arguments = "";
+                        if (!self.isUndefined(constraintJ.min)) {
+                            constraint.arguments += "min: " + constraintJ.min;
+                        }
+                        if (!self.isUndefined(constraintJ.max)) {
+                            constraint.arguments += " max: " + constraintJ.max;
+                        }
+                        self.predicates.push(constraint);
+                    }
+                }
+            }
+
             self.createJobConfiguration = function (dataValidationSettings) {
                 var jobName = self.JOB_PREFIX + self.featureGroup.name + "-v"
                     + self.featureGroup.version + "_" + Math.round(new Date().getTime() / 1000);
@@ -332,7 +408,7 @@ angular.module('hopsWorksApp')
             self.finishValidationRules = function () {
                 var deequRules = self.convertConstraints2DeequRules();
                 if (deequRules.constraintGroups.length == 0) {
-                    growl.error("There are no Predicates", { title: "Failed creating Job", ttl: 5000, referenceId: 1 })
+                    growl.error("There are no Predicates", { title: "Failed creating Job", ttl: 5000, referenceId: "dv_growl" })
                     return;
                 }
                 var constraintsDTO = self.convertRules2DTO(deequRules);
@@ -346,21 +422,21 @@ angular.module('hopsWorksApp')
                             JobService.putJob(self.projectId, jobConfig).then(
                                 function (success) {
                                     growl.info('Data Validation Job ' + jobConfig.appName + ' created',
-                                        { title: 'Created Job', ttl: 5000, referenceId: 1 });
+                                        { title: 'Created Job', ttl: 5000, referenceId: "dv_growl" });
                                     self.submittingRules = false;
                                     JobService.setJobFilter(self.JOB_PREFIX + self.featureGroup.name);
                                     $location.path('project/' + self.projectId + "/jobs");
                                 }, function (error) {
                                     self.submittingRules = false;
                                     var errorMsg = (typeof error.data.usrMsg !== 'undefined') ? error.data.usrMsg : "";
-                                    growl.error(errorMsg, { title: 'Could not create data validation project', ttl: 5000, referenceId: 1 });
+                                    growl.error(errorMsg, { title: 'Could not create data validation project', ttl: 5000, referenceId: "dv_growl" });
                                     self.toggleNewDataValidationPage();
                                 }
                             )
                         }, function (error) {
                             self.submittingRules = false;
                             var errorMsg = (typeof error.data.usrMsg !== 'undefined') ? error.data.usrMsg : "";
-                            growl.error(errorMsg, { title: 'Could not create data validation project', ttl: 5000, referenceId: 1 });
+                            growl.error(errorMsg, { title: 'Could not create data validation project', ttl: 5000, referenceId: "dv_growl" });
                             self.toggleNewDataValidationPage();
                         })
             }
