@@ -6,13 +6,22 @@
         <div class="content-wrapper">
             <div growl reference="dv_growl" class="pull-right"></div>
             <div class="content" style="background-color: white">
-                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10" layout-align="left left" style='margin-left: 0px;'>
-                    <div class="row">
-                        <button type="button" ng-click="dataValidationCtrl.toggleNewDataValidationPage()"
-                            class="btn btn-default btn-success control-label" style="margin: 10px">
-                            Create new data validation<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
-                            </i>
-                        </button>
+                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10" style='margin-left: 0px;'>
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <button type="button" ng-click="dataValidationCtrl.toggleNewDataValidationPage()"
+                                class="btn btn-default btn-success control-label" style="margin: 10px">
+                                Create new data validation<i style="margin-left: 10px" class="glyphicon glyphicon-plus">
+                                </i>
+                            </button>
+                        </div>
+                        <div class="col-md-4 pull-right">
+                            <h3>
+                                <span class="label label-default">{{dataValidationCtrl.featureGroup.name}}</span>
+                                <span class="fa fa-times-circle" ng-click="dataValidationCtrl.returnToFeaturestore()"
+                                    uib-tooltip="Return to Feature Store main page."> </span>
+                            </h3>
+                        </div>
                     </div>
                     <hr class="col-xs-12 col-sm-12 col-md-12 col-lg-12" />
                 </div>

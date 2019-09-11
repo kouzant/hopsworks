@@ -202,6 +202,10 @@ angular.module('hopsWorksApp')
                 }
             }
 
+            self.returnToFeaturestore = function () {
+                $location.path('project/' + self.projectId + "/featurestore");
+            }
+            
             self.fetchValidationRules = function () {
                 self.validationWorking = true;
                 DataValidationService.getRules(self.projectId, self.featureGroup.featurestoreId,
