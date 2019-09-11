@@ -70,13 +70,13 @@
                                         </div>
                                     </div>
 
-                                    <dir-pagination-controls pagination-id="rules" class="pull-right" max-size="5"
+                                    <dir-pagination-controls pagination-id="rulebasket" class="pull-right" max-size="5"
                                         direction-links="true" boundary-links="true">
                                     </dir-pagination-controls>
 
                                     <ul class="shopping-cart-items"
                                         dir-paginate="rule in dataValidationCtrl.user_rules | itemsPerPage:5 "
-                                        pagination-id="rule">
+                                        pagination-id="rulebasket">
                                         <li class="clearfix">
                                             <button class="btn btn-xs btn-danger fa fa-trash fa-xs" uib-tooltip="Delete"
                                                 ng-click="dataValidationCtrl.removeRuleFromBasket($index);"></button>
