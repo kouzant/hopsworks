@@ -281,6 +281,7 @@ angular.module('hopsWorksApp')
                     var features = self.featureGroup.features;
                     var newRule = new Predicate(rule.name, rule.predicateType, rule.columnsSelectionMode,
                         rule.friendlyName, rule.description);
+                    newRule.constraintGroup = warningGroup;
                     ModalService.addDataValidationPredicate('lg', features, newRule, self.flatValidationGroups).then(
                         function (selectedRule) {
                             thisthis.user_rules.push(selectedRule);
