@@ -31,15 +31,12 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="card-group">
-                                <div class="col-md-5" style="width: 23rem;"
+                                <div class="col-md-5" style="width: 23rem; height: 14rem;"
                                     ng-repeat="rule in dataValidationCtrl.valid_predicates">
                                     <div class="card">
                                         <div class="card-block">
-                                            <h3 class="card-title">{{rule.name}}</h3>
-                                            <p class="card-text">With supporting text below as a natural lead-in to
-                                                additional
-                                                content.
-                                            </p>
+                                            <h3 class="card-title">{{rule.friendlyName}}</h3>
+                                            <p class="card-text">{{rule.description}}</p>
                                             <a class="btn btn-primary"
                                                 ng-click="dataValidationCtrl.addRule2DataValidation(rule)">
                                                 Add</a>

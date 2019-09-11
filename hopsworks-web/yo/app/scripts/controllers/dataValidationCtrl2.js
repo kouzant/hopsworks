@@ -50,9 +50,11 @@ angular.module('hopsWorksApp')
                 BOUNDARY: 0
             }
 
-            var Predicate = function (name, predicateType, columnsSelectionMode, validationFunction) {
+            var Predicate = function (name, predicateType, columnsSelectionMode, friendlyName, description) {
                 this.name = name;
                 this.predicateType = predicateType;
+                this.friendlyName = friendlyName;
+                this.description = description;
                 this.constraintGroup;
                 this.columnsSelectionMode = columnsSelectionMode;
                 // For SIGNLE_COLUMN predicates
@@ -129,29 +131,56 @@ angular.module('hopsWorksApp')
             ** Deequ rules
             */
             var hasSize = new Predicate("hasSize", self.predicateType.BOUNDARY,
-                self.columnsModes.NO_COLUMNS);
+                self.columnsModes.NO_COLUMNS, "Size",
+                "Assertion on the number of rows of a feature");
+
             var hasCompleteness = new Predicate("hasCompleteness",
-                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
+                "Completeness", "Assertion on column completeness");
+
             var hasUniqueness = new Predicate("hasUniqueness",
-                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
+                "Uniqueness", "Assertion on the uniqueness of a single or multiple columns");
+
             var hasDistinctness = new Predicate("hasDistinctness",
-                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
+                "Distinctness",
+                "Assertion on the distinctness of a single or multiple columns");
+
             var hasUniqueValueRatio = new Predicate("hasUniqueValueRatio",
-                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS);
+                self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
+                "Unique ratio",
+                "Creates a constraint on the unique value ratio in a single or combined set of key columns");
+
             var hasNumberOfDistinctValues = new Predicate("hasNumberOfDistinctValues",
-                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN);
+                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN,
+                "Distinct values",
+                "Assertion on the number of unique values of a column");
+
             var hasEntropy = new Predicate("hasEntropy",
-                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN);
+                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN,
+                "Entropy",
+                "Creates a constraint that asserts on a column entropy");
+
             var hasMin = new Predicate("hasMin", self.predicateType.BOUNDARY,
-                self.columnsModes.SINGLE_COLUMN);
+                self.columnsModes.SINGLE_COLUMN, "Minimum",
+                "Assertion on the minimum of a column");
+
             var hasMax = new Predicate("hasMax", self.predicateType.BOUNDARY,
-                self.columnsModes.SINGLE_COLUMN);
+                self.columnsModes.SINGLE_COLUMN, "Maximum",
+                "Assertion on the maximum of a column");
+
             var hasMean = new Predicate("hasMean", self.predicateType.BOUNDARY,
-                self.columnsModes.SINGLE_COLUMN);
+                self.columnsModes.SINGLE_COLUMN, "Mean",
+                "Assertion on the mean of a column");
+
             var hasSum = new Predicate("hasSum", self.predicateType.BOUNDARY,
-                self.columnsModes.SINGLE_COLUMN);
+                self.columnsModes.SINGLE_COLUMN, "Sum",
+                "Assertion on the sum of the values of a column");
+
             var hasStandardDeviation = new Predicate("hasStandardDeviation",
-                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN);
+                self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN,
+                "Standard deviation", "Assertion on the standard deviation of a column");
 
             self.valid_predicates = [hasSize, hasCompleteness, hasUniqueness,
                 hasDistinctness, hasUniqueValueRatio, hasNumberOfDistinctValues,
@@ -205,7 +234,7 @@ angular.module('hopsWorksApp')
             self.returnToFeaturestore = function () {
                 $location.path('project/' + self.projectId + "/featurestore");
             }
-            
+
             self.fetchValidationRules = function () {
                 self.validationWorking = true;
                 DataValidationService.getRules(self.projectId, self.featureGroup.featurestoreId,
@@ -250,7 +279,8 @@ angular.module('hopsWorksApp')
                     console.log(">>> Adding rule: " + rule.name);
                     var thisthis = self;
                     var features = self.featureGroup.features;
-                    var newRule = new Predicate(rule.name, rule.predicateType, rule.columnsSelectionMode);
+                    var newRule = new Predicate(rule.name, rule.predicateType, rule.columnsSelectionMode,
+                        rule.friendlyName, rule.description);
                     ModalService.addDataValidationPredicate('lg', features, newRule, self.flatValidationGroups).then(
                         function (selectedRule) {
                             thisthis.user_rules.push(selectedRule);
