@@ -132,20 +132,22 @@ angular.module('hopsWorksApp')
             */
             var hasSize = new Predicate("hasSize", self.predicateType.BOUNDARY,
                 self.columnsModes.NO_COLUMNS, "Size",
-                "Assertion on the number of rows of a feature");
+                "Assertion on the number of rows of a feature. Acceptable size of the dataset, e.g. min: 500 and max: 1000");
 
             var hasCompleteness = new Predicate("hasCompleteness",
                 self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
-                "Completeness", "Assertion on column completeness");
+                "Completeness",
+                "Assertion on column completeness. Acceptable fraction of the data to be complete, e.g. min: 0.5 max: 0.8");
 
             var hasUniqueness = new Predicate("hasUniqueness",
                 self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
-                "Uniqueness", "Assertion on the uniqueness of a single or multiple columns");
+                "Uniqueness",
+                "Assertion on the uniqueness of a single or multiple columns. Acceptable fraction of the data to be unique, e.g. min: 0.7 max: 1");
 
             var hasDistinctness = new Predicate("hasDistinctness",
                 self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
                 "Distinctness",
-                "Assertion on the distinctness of a single or multiple columns");
+                "Assertion on the distinctness of a single or multiple columns. Acceptable fraction of the data to be distinct, e.g. min: 1 max: 1");
 
             var hasUniqueValueRatio = new Predicate("hasUniqueValueRatio",
                 self.predicateType.BOUNDARY, self.columnsModes.MULTI_COLUMNS,
@@ -160,27 +162,28 @@ angular.module('hopsWorksApp')
             var hasEntropy = new Predicate("hasEntropy",
                 self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN,
                 "Entropy",
-                "Creates a constraint that asserts on a column entropy");
+                "Creates a constraint that asserts on a column entropy. Acceptable entropy of the data, e.g. min: 0.6 max: 1");
 
             var hasMin = new Predicate("hasMin", self.predicateType.BOUNDARY,
                 self.columnsModes.SINGLE_COLUMN, "Minimum",
-                "Assertion on the minimum of a column");
+                "Assertion on the minimum of a column. Acceptable minimum value in the dataset, e.g. min: 3 max: 3");
 
             var hasMax = new Predicate("hasMax", self.predicateType.BOUNDARY,
                 self.columnsModes.SINGLE_COLUMN, "Maximum",
-                "Assertion on the maximum of a column");
+                "Assertion on the maximum of a column. Acceptable maximum value in the dataset, e.g. min: 100 max: 120");
 
             var hasMean = new Predicate("hasMean", self.predicateType.BOUNDARY,
                 self.columnsModes.SINGLE_COLUMN, "Mean",
-                "Assertion on the mean of a column");
+                "Assertion on the mean of a column. Acceptable mean value of the dataset, e.g. min: 200 max: 250");
 
             var hasSum = new Predicate("hasSum", self.predicateType.BOUNDARY,
                 self.columnsModes.SINGLE_COLUMN, "Sum",
-                "Assertion on the sum of the values of a column");
+                "Assertion on the sum of the values of a column. Acceptable sum of all values in the dataset, e.g. min: 5000 max: 5000");
 
             var hasStandardDeviation = new Predicate("hasStandardDeviation",
                 self.predicateType.BOUNDARY, self.columnsModes.SINGLE_COLUMN,
-                "Standard deviation", "Assertion on the standard deviation of a column");
+                "Standard deviation",
+                "Assertion on the standard deviation of a column. Acceptable SD of the dataset, e.g. min: 3 max: 5");
 
             self.valid_predicates = [hasSize, hasCompleteness, hasUniqueness,
                 hasDistinctness, hasUniqueValueRatio, hasNumberOfDistinctValues,
@@ -282,6 +285,7 @@ angular.module('hopsWorksApp')
                     var newRule = new Predicate(rule.name, rule.predicateType, rule.columnsSelectionMode,
                         rule.friendlyName, rule.description);
                     newRule.constraintGroup = warningGroup;
+                    newRule.hint = rule.name;
                     ModalService.addDataValidationPredicate('lg', features, newRule, self.flatValidationGroups).then(
                         function (selectedRule) {
                             thisthis.user_rules.push(selectedRule);

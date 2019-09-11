@@ -31,12 +31,12 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="card-group">
-                                <div class="col-md-5" style="width: 23rem; height: 13rem;"
+                                <div class="col-md-5" style="width: 23rem; height: 15rem;"
                                     ng-repeat="rule in dataValidationCtrl.valid_predicates">
-                                    <div class="card" style="height: 12rem;">
+                                    <div class="card" style="height: 14rem;">
                                         <div class="card-block">
                                             <h3 class="card-title">{{rule.friendlyName}}</h3>
-                                            <p class="card-text" style="height: 3rem;">{{rule.description}}</p>
+                                            <p class="card-text" style="height: 5rem;">{{rule.description}}</p>
                                             <a class="btn btn-primary"
                                                 ng-click="dataValidationCtrl.addRule2DataValidation(rule)">
                                                 Add</a>

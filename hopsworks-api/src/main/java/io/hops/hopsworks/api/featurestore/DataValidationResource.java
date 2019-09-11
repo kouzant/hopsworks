@@ -63,8 +63,6 @@ public class DataValidationResource {
   @EJB
   private FeaturegroupController featuregroupController;
   @EJB
-  private DataValidationConstraintsBuilder dataValidationConstraintsBuilder;
-  @EJB
   private DataValidationController dataValidationController;
   @EJB
   private JWTHelper jwtHelper;

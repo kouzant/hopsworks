@@ -27,9 +27,9 @@ import java.util.List;
 public class ConstraintDTO extends RestDTO<ConstraintDTO> {
   private String name;
   private String hint;
-  private Integer min;
-  private Integer max;
-  List<String> columns;
+  private Double min;
+  private Double max;
+  private List<String> columns;
   
   public ConstraintDTO() {
   }
@@ -50,19 +50,19 @@ public class ConstraintDTO extends RestDTO<ConstraintDTO> {
     this.hint = hint;
   }
   
-  public Integer getMin() {
+  public Double getMin() {
     return min;
   }
   
-  public void setMin(Integer min) {
+  public void setMin(Double min) {
     this.min = min;
   }
   
-  public Integer getMax() {
+  public Double getMax() {
     return max;
   }
   
-  public void setMax(Integer max) {
+  public void setMax(Double max) {
     this.max = max;
   }
   

@@ -21,8 +21,8 @@ import java.util.List;
 public class Constraint {
   private String name;
   private String hint;
-  private Integer min;
-  private Integer max;
+  private Double min;
+  private Double max;
   private List<String> columns;
   
   public Constraint() {}
@@ -43,19 +43,19 @@ public class Constraint {
     this.hint = hint;
   }
   
-  public Integer getMin() {
+  public Double getMin() {
     return min;
   }
   
-  public void setMin(Integer min) {
+  public void setMin(Double min) {
     this.min = min;
   }
   
-  public Integer getMax() {
+  public Double getMax() {
     return max;
   }
   
-  public void setMax(Integer max) {
+  public void setMax(Double max) {
     this.max = max;
   }
   
