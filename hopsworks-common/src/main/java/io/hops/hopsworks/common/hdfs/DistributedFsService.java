@@ -39,7 +39,6 @@
 
 package io.hops.hopsworks.common.hdfs;
 
-import io.hops.hopsworks.common.dao.hdfs.HdfsLeDescriptorsFacade;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -50,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
@@ -57,19 +57,21 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import io.hops.hopsworks.exceptions.CryptoPasswordNotFoundException;
-import io.hops.hopsworks.common.security.BaseHadoopClientsService;
-import io.hops.hopsworks.common.util.Settings;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.net.HopsSSLSocketFactory;
 import org.apache.hadoop.security.UserGroupInformation;
+
+import io.hops.hopsworks.common.dao.hdfs.HdfsLeDescriptorsFacade;
 import io.hops.hopsworks.common.dao.hdfs.inode.Inode;
 import io.hops.hopsworks.common.dao.hdfs.inode.InodeFacade;
-import io.hops.hopsworks.common.dao.hdfsUser.HdfsUsersFacade;
 import io.hops.hopsworks.common.dao.hdfsUser.HdfsGroups;
+import io.hops.hopsworks.common.dao.hdfsUser.HdfsUsersFacade;
+import io.hops.hopsworks.common.security.BaseHadoopClientsService;
+import io.hops.hopsworks.common.util.Settings;
+import io.hops.hopsworks.exceptions.CryptoPasswordNotFoundException;
 
 @Stateless
 public class DistributedFsService {
@@ -362,5 +364,9 @@ public class DistributedFsService {
     } else {
       return Collections.EMPTY_LIST;
     }
+  }
+
+  public Configuration getConf() {
+    return conf;
   }
 }

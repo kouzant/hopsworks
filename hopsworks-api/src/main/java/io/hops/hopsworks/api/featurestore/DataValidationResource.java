@@ -16,6 +16,25 @@
 
 package io.hops.hopsworks.api.featurestore;
 
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+
 import io.hops.hopsworks.api.featurestore.json.datavalidation.ConstraintGroupDTO;
 import io.hops.hopsworks.api.featurestore.json.datavalidation.DataValidationSettingsDTO;
 import io.hops.hopsworks.api.filter.AllowedProjectRoles;
@@ -37,35 +56,23 @@ import io.hops.hopsworks.jwt.annotation.JWTRequired;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 @Api(value = "Feature store data validation service")
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NEVER)
-@JWTRequired(acceptedTokens={Audience.API}, allowedUserRoles={"HOPS_ADMIN", "HOPS_USER"})
-@ApiKeyRequired( acceptedScopes = {ApiScope.FEATURESTORE}, allowedUserRoles = {"HOPS_ADMIN", "HOPS_USER"})
-@AllowedProjectRoles({AllowedProjectRoles.DATA_OWNER, AllowedProjectRoles.DATA_SCIENTIST})
+@JWTRequired(acceptedTokens = {Audience.API}, allowedUserRoles = {"HOPS_ADMIN",
+    "HOPS_USER"})
+@ApiKeyRequired(acceptedScopes = {ApiScope.FEATURESTORE}, allowedUserRoles = {
+    "HOPS_ADMIN", "HOPS_USER"})
+@AllowedProjectRoles({AllowedProjectRoles.DATA_OWNER,
+    AllowedProjectRoles.DATA_SCIENTIST})
 public class DataValidationResource {
-  private static Logger LOGGER = Logger.getLogger(DataValidationResource.class.getName());
-  private static final String HOPS_VERIFICATION_JAR_TEMPLATE = "hdfs:///user" + org.apache.hadoop.fs.Path.SEPARATOR
-      + "%s" + org.apache.hadoop.fs.Path.SEPARATOR + "hops-verification-assembly-%s.jar";
-  
+  private static Logger LOGGER = Logger
+      .getLogger(DataValidationResource.class.getName());
+  private static final String HOPS_VERIFICATION_JAR_TEMPLATE = "hdfs:///user"
+      + org.apache.hadoop.fs.Path.SEPARATOR + "%s"
+      + org.apache.hadoop.fs.Path.SEPARATOR
+      + "hops-verification-assembly-%s.jar";
+
   @EJB
   private FeaturestoreFacade featurestoreFacade;
   @EJB
@@ -76,23 +83,23 @@ public class DataValidationResource {
   private JWTHelper jwtHelper;
   @EJB
   private Settings settings;
-  
+
   private Featurestore featurestore;
   private String path2hopsverification;
-  
+
   public DataValidationResource setFeatureStore(Integer featureStoreId) {
     this.featurestore = featurestoreFacade.findById(featureStoreId);
     return this;
   }
-  
+
   @PostConstruct
   public void init() {
-    path2hopsverification = String.format(HOPS_VERIFICATION_JAR_TEMPLATE, settings.getSparkUser(),
-        settings.getHopsVerificationVersion());
+    path2hopsverification = String.format(HOPS_VERIFICATION_JAR_TEMPLATE,
+        settings.getSparkUser(), settings.getHopsVerificationVersion());
   }
-  
-  @ApiOperation(value = "Write Deequ validation rules to Filesystem so validation job can pick it up",
-    response = DataValidationSettingsDTO.class)
+
+  @ApiOperation(value = "Write Deequ validation rules to Filesystem so validation job can pick it up", 
+      response = DataValidationSettingsDTO.class)
   @POST
   @Path("{featuregroupId}/rules")
   @Produces(MediaType.APPLICATION_JSON)
@@ -100,47 +107,54 @@ public class DataValidationResource {
       @PathParam("featuregroupId") Integer featureGroupId,
       @Context SecurityContext sc) throws FeaturestoreException {
     Users user = jwtHelper.getUserPrincipal(sc);
-    FeaturegroupDTO featureGroup = featuregroupController.getFeaturegroupWithIdAndFeaturestore(featurestore,
-        featureGroupId);
-  
-    String rulesPath = dataValidationController.writeRulesToFile(user, featurestore.getProject(), featureGroup,
+    FeaturegroupDTO featureGroup = featuregroupController
+        .getFeaturegroupWithIdAndFeaturestore(featurestore, featureGroupId);
+
+    String rulesPath = dataValidationController.writeRulesToFile(user,
+        featurestore.getProject(), featureGroup,
         constraintGroups.toConstraintGroups());
-    
+
     DataValidationSettingsDTO settings = new DataValidationSettingsDTO();
     settings.setValidationRulesPath(rulesPath);
     settings.setExecutablePath(path2hopsverification);
-    settings.setExecutableMainClass(dataValidationController.getHopsVerificationMainClass(
-        new org.apache.hadoop.fs.Path(path2hopsverification)));
+    settings.setExecutableMainClass(
+        dataValidationController.getHopsVerificationMainClass(
+            new org.apache.hadoop.fs.Path(path2hopsverification)));
     LOGGER.log(Level.FINE, "Validation settings: " + settings);
     return Response.ok().entity(settings).build();
   }
-  
+
   @ApiOperation(value = "Get previously stored Deequ validation rules", response = ConstraintGroupDTO.class)
   @GET
   @Path("{featuregroupId}/rules")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getValidationRules(@PathParam("featuregroupId") Integer featureGroupId,
+  public Response getValidationRules(
+      @PathParam("featuregroupId") Integer featureGroupId,
       @Context SecurityContext sc) throws FeaturestoreException {
     Users user = jwtHelper.getUserPrincipal(sc);
-    FeaturegroupDTO featureGroup = featuregroupController.getFeaturegroupWithIdAndFeaturestore(featurestore,
-        featureGroupId);
-    List<ConstraintGroup> constraintGroups = dataValidationController.readRulesForFeatureGroup(user,
-        featurestore.getProject(), featureGroup);
-    ConstraintGroupDTO response = ConstraintGroupDTO.fromConstraintGroups(constraintGroups);
+    FeaturegroupDTO featureGroup = featuregroupController
+        .getFeaturegroupWithIdAndFeaturestore(featurestore, featureGroupId);
+    List<ConstraintGroup> constraintGroups = dataValidationController
+        .readRulesForFeatureGroup(user, featurestore.getProject(),
+            featureGroup);
+    ConstraintGroupDTO response = ConstraintGroupDTO
+        .fromConstraintGroups(constraintGroups);
     return Response.ok(response).build();
   }
-  
+
   @ApiOperation(value = "Fetch the result of a Deequ data validation job", response = ValidationResult.class)
   @GET
   @Path("{featuregroupId}/result")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getValidationResult(@PathParam("featuregroupId") Integer featureGroupId,
+  public Response getValidationResult(
+      @PathParam("featuregroupId") Integer featureGroupId,
       @Context SecurityContext sc) throws FeaturestoreException {
     Users user = jwtHelper.getUserPrincipal(sc);
-    FeaturegroupDTO featureGroup = featuregroupController.getFeaturegroupWithIdAndFeaturestore(featurestore,
-        featureGroupId);
-    ValidationResult result = dataValidationController.getValidationResultForFeatureGroup(user,
-        featurestore.getProject(), featureGroup);
+    FeaturegroupDTO featureGroup = featuregroupController
+        .getFeaturegroupWithIdAndFeaturestore(featurestore, featureGroupId);
+    ValidationResult result = dataValidationController
+        .getValidationResultForFeatureGroup(user, featurestore.getProject(),
+            featureGroup);
     return Response.ok(result).build();
   }
 }

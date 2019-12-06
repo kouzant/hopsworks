@@ -37,6 +37,15 @@ angular.module('hopsWorksApp')
                 getResult: function (projectId, featureStoreId, featureGroupId) {
                     return $http.get('/api/project/' + projectId + '/featurestores/'
                         + featureStoreId + '/datavalidation/' + featureGroupId + '/result');
+                }, 
+                /**
+                 * Returns list of feature names in the avro/parquet data file.
+                 * 
+                 * @param {*} projectId 
+                 * @param {*} filePath 
+                 */
+                getFeatureNames: function (projectId, filePath) {
+                    return $http.get('/api/project/' + projectId + '/featureNames/?dataPath=' + filePath);
                 }
             }
         }]);

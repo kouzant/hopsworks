@@ -130,7 +130,20 @@
           Feature Store<span class="sub_icon fa fa-database fa-lg pull-right"></span>
         </a>
       </li>
-      
+<!--      <li ng-click="projectCtrl.goToFeaturestore()" ng-show="projectCtrl.showFeaturestore()" id="dataValidationTab">-->
+<!--        <a>-->
+<!--          Data Validation<span class="sub_icon fa fa-database fa-lg pull-right"></span>-->
+<!--        </a>-->
+<!--      </li>-->
+      <li ng-click="projectCtrl.goToDataValidation()" ng-show="projectCtrl.cloak" id="dataValidationTab">
+        <a>
+          Data Validation <span class="sub_icon fa fa-database fa-lg pull-right"></span>
+          <i class=" pull-left fa "
+             uib-tooltip="Orange triangle: the filesystem is encountering problems. Red means the filesystem is down."
+             tooltip-placement="auto right"
+             ng-class="{'fa-ban text-danger': clusterUtilCtrl.HdfsBan, 'fa-exclamation-triangle text-warning': clusterUtilCtrl.HdfsWarn }" aria-hidden="true" style="margin-top: 3px"></i>
+        </a>
+      </li>
       <li ng-click="projectCtrl.goToDatasets()" style="margin-top:20px; margin-bottom:20px;" ng-show="projectCtrl.cloak" id="datasetsTab">
         <a>
           Data Sets <span class="sub_icon fa fa-folder-open fa-lg pull-right"></span>

@@ -381,6 +381,12 @@ angular.module('hopsWorksApp')
                 self.goToUrl('featurestore');
             };
 
+            self.goToDataValidation = function () {
+                console.log("here!!");
+                self.goToUrl('dataValidation');
+
+            };
+
             self.goToPython = function () {
               self.toggleKibanaNavBar();
               self.goToUrl('python');

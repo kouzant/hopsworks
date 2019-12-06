@@ -38,6 +38,36 @@
  */
 package io.hops.hopsworks.api.project;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+
 import io.hops.hopsworks.api.activities.ProjectActivitiesResource;
 import io.hops.hopsworks.api.airflow.AirflowService;
 import io.hops.hopsworks.api.dela.DelaClusterProjectService;
@@ -48,9 +78,9 @@ import io.hops.hopsworks.api.filter.Audience;
 import io.hops.hopsworks.api.filter.NoCacheResponse;
 import io.hops.hopsworks.api.filter.apiKey.ApiKeyRequired;
 import io.hops.hopsworks.api.jobs.JobsResource;
-import io.hops.hopsworks.api.kafka.KafkaService;
 import io.hops.hopsworks.api.jupyter.JupyterService;
 import io.hops.hopsworks.api.jwt.JWTHelper;
+import io.hops.hopsworks.api.kafka.KafkaService;
 import io.hops.hopsworks.api.python.PythonResource;
 import io.hops.hopsworks.api.serving.ServingService;
 import io.hops.hopsworks.api.serving.inference.InferenceResource;
@@ -63,6 +93,8 @@ import io.hops.hopsworks.common.dao.dataset.Dataset;
 import io.hops.hopsworks.common.dao.dataset.DatasetFacade;
 import io.hops.hopsworks.common.dao.dataset.DatasetPermissions;
 import io.hops.hopsworks.common.dao.featurestore.FeaturestoreController;
+import io.hops.hopsworks.common.dao.featurestore.datavalidation.DataValidationController;
+import io.hops.hopsworks.common.dao.featurestore.datavalidation.FeatureNameDTO;
 import io.hops.hopsworks.common.dao.hdfs.inode.Inode;
 import io.hops.hopsworks.common.dao.hdfs.inode.InodeFacade;
 import io.hops.hopsworks.common.dao.jobs.quota.YarnPriceMultiplicator;
@@ -83,8 +115,8 @@ import io.hops.hopsworks.common.dataset.FilePreviewDTO;
 import io.hops.hopsworks.common.hdfs.DistributedFileSystemOps;
 import io.hops.hopsworks.common.hdfs.DistributedFsService;
 import io.hops.hopsworks.common.hdfs.HdfsUsersController;
-import io.hops.hopsworks.common.project.CertsDTO;
 import io.hops.hopsworks.common.project.AccessCredentialsDTO;
+import io.hops.hopsworks.common.project.CertsDTO;
 import io.hops.hopsworks.common.project.MoreInfoDTO;
 import io.hops.hopsworks.common.project.ProjectController;
 import io.hops.hopsworks.common.project.ProjectDTO;
@@ -106,34 +138,6 @@ import io.hops.hopsworks.jwt.annotation.JWTRequired;
 import io.hops.hopsworks.restutils.RESTCodes;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.GenericEntity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Path("/project")
 @Stateless
@@ -207,6 +211,8 @@ public class ProjectService {
   private ProjectActivitiesResource activitiesResource;
   @Inject
   private FeaturestoreService featurestoreService;
+  @EJB
+  private DataValidationController dataValidationController;
 
   private final static Logger LOGGER = Logger.getLogger(ProjectService.class.getName());
 
@@ -846,6 +852,24 @@ public class ProjectService {
   public FeaturestoreService featurestoreService(@PathParam("projectId") Integer projectId) {
     featurestoreService.setProjectId(projectId);
     return featurestoreService;
+  }
+
+  @ApiOperation(
+      value = "Fetch feature/field names from a data file to create validation rules on")
+  @GET
+  @Path("{projectId}/featureNames")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getFeaturesFromData(@PathParam("projectId") Integer projectId,
+      @QueryParam("dataPath") String dataPath)
+      throws FeaturestoreException {
+    List<FeatureNameDTO> features = dataValidationController
+        .getFeaturesFromDataPath(dataPath);
+
+    GenericEntity<List<FeatureNameDTO>> fieldNamesEntity = new GenericEntity<List<FeatureNameDTO>>(
+        features) {
+    };
+
+    return Response.ok().entity(fieldNamesEntity).build();
   }
 
 }

@@ -248,6 +248,75 @@ angular.module('hopsWorksApp')
                     self.showCreateNewDataValidationPage = false;
                 }
             }
+// *******************************
+             /**
+             * Open a dialog for directory selection.
+             * @param {Object} parameter The parameter to bind.
+             * @returns {undefined}
+             */
+            this.selectFile = function (parameter) {
+                ModalService.selectFile('lg',  self.projectId, "",
+                        "Please select a valid file.", false).then(
+                        function (success) {
+                          self.onFileSelected(success);
+                        }, function (error) {
+                  //The user changed their mind.
+                });
+              };
+
+            /**
+             * Callback for when the user selected a folder for data.
+             * @param {String} path
+             * @returns {undefined}
+             */
+            self.onFileSelected = function (path) {
+              var filename = getFileName(path);
+              console.log("File " + filename + " was selected")
+
+              self.getFeatureNames(self.projectId,  );
+
+            }
+
+            /**
+             * Retrieves a list of feature names in the data file selected
+             */
+            self.getFeatureNames = function (filePath) {
+                console.log("Project ID=" + self.projectId);
+                console.log("File Path=" + filePath);
+                
+                filePath="hdfs://localhost:8020/Projects/project_datavalidation/Resources/DataFiles/userdata1.avro";
+                console.log("Now File Path=" + filePath);
+                
+                DataValidationService.getFeatureNames(self.projectId, filePath).then(
+                    function (success) {
+                        console.log("Success!!!")
+                        var features = success.data;
+                        var key="featureName", i;
+                        for (i = 0; i < features.length; i++) {
+                            //console.log(features[i]);
+                            if (features[i].hasOwnProperty(key)) {
+                                console.log("Feature name = " + features[i].);
+                            }
+                        }
+
+                        // console.log("Feature Names: " + self.features);
+
+                        // if(self.featurestore === null || self.featurestore === 'undefined'){
+                        //     self.selectProjectFeaturestore()
+                        // } else {
+                        //     self.selectFeaturestore(self.featurestore)
+                        // }
+                    },
+                    function (error) {
+                        growl.error(error, {
+                            title: "Failed to fetch list of feature names",
+                            ttl: 15000
+                        });
+                    }
+                );
+            };
+
+// *******************************
 
             self.returnToFeaturestore = function () {
                 $location.path('project/' + self.projectId + "/featurestore");
