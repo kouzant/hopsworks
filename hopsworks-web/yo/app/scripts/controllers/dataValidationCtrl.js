@@ -26,6 +26,7 @@ angular.module('hopsWorksApp')
             self.JOB_PREFIX = "DV-";
             self.submittingRules = false;
             self.featureGroup = {};
+            self.featureList = [];
             self.user_rules = [];
             // Used only for UI to list existing predicates
             self.predicates = [];
@@ -248,7 +249,8 @@ angular.module('hopsWorksApp')
                     self.showCreateNewDataValidationPage = false;
                 }
             }
-// *******************************
+
+            
              /**
              * Open a dialog for directory selection.
              * @param {Object} parameter The parameter to bind.
@@ -271,41 +273,34 @@ angular.module('hopsWorksApp')
              */
             self.onFileSelected = function (path) {
               var filename = getFileName(path);
-              console.log("File " + filename + " was selected")
-
-              self.getFeatureNames(self.projectId,  );
-
+              self.getFeatureNames(path);
             }
 
             /**
              * Retrieves a list of feature names in the data file selected
              */
             self.getFeatureNames = function (filePath) {
-                console.log("Project ID=" + self.projectId);
+                //filePath="hdfs://localhost:8020/Projects/project_datavalidation/Resources/DataFiles/userdata1.avro";
+                filePath = "hdfs://localhost:8020/".concat(filePath);
                 console.log("File Path=" + filePath);
-                
-                filePath="hdfs://localhost:8020/Projects/project_datavalidation/Resources/DataFiles/userdata1.avro";
-                console.log("Now File Path=" + filePath);
                 
                 DataValidationService.getFeatureNames(self.projectId, filePath).then(
                     function (success) {
                         console.log("Success!!!")
                         var features = success.data;
-                        var key="featureName", i;
+                        var i;
                         for (i = 0; i < features.length; i++) {
-                            //console.log(features[i]);
-                            if (features[i].hasOwnProperty(key)) {
-                                console.log("Feature name = " + features[i].);
+                            if (features[i].hasOwnProperty("featureName")) {
+                                self.featureList.push(features[i].featureName);
                             }
                         }
-
-                        // console.log("Feature Names: " + self.features);
-
-                        // if(self.featurestore === null || self.featurestore === 'undefined'){
-                        //     self.selectProjectFeaturestore()
-                        // } else {
-                        //     self.selectFeaturestore(self.featurestore)
-                        // }
+                        
+                        // Save the feature names with the StorageService
+                        StorageService.store("feature_names", self.featureList);
+                        // $location.path('project/' + self.projectId + "/featurestore");
+                        self.toggleNewDataValidationPage();
+                        
+                        
                     },
                     function (error) {
                         growl.error(error, {
@@ -315,8 +310,6 @@ angular.module('hopsWorksApp')
                     }
                 );
             };
-
-// *******************************
 
             self.returnToFeaturestore = function () {
                 $location.path('project/' + self.projectId + "/featurestore");
@@ -359,11 +352,15 @@ angular.module('hopsWorksApp')
             }
 
             self.addRule2DataValidation = function (rule) {
+                console.log("add rule called.. ");
                 if (self.isUndefined(rule)) {
                     growl.error("Rule is Undefined", { title: "Failed to add rule", ttl: 2000, referenceId: "dv_growl" });
                 } else {
                     var thisthis = self;
-                    var features = self.featureGroup.features;
+                    var features =  self.featureList;//self.featureGroup.features;
+                    
+                    console.log("feature list: " + features);
+
                     var newRule = new Predicate(rule.name, rule.predicateType, rule.columnsSelectionMode,
                         rule.friendlyName, rule.description);
                     newRule.constraintGroup = warningGroup;

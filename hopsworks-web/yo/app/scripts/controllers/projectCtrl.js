@@ -382,7 +382,6 @@ angular.module('hopsWorksApp')
             };
 
             self.goToDataValidation = function () {
-                console.log("here!!");
                 self.goToUrl('dataValidation');
 
             };
